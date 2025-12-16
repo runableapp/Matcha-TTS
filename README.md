@@ -4,8 +4,8 @@
 
 ### [Shivam Mehta](https://www.kth.se/profile/smehta), [Ruibo Tu](https://www.kth.se/profile/ruibo), [Jonas Beskow](https://www.kth.se/profile/beskow), [Éva Székely](https://www.kth.se/profile/szekely), and [Gustav Eje Henter](https://people.kth.se/~ghe/)
 
-[![python](https://img.shields.io/badge/-Python_3.10-blue?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
-[![pytorch](https://img.shields.io/badge/PyTorch_2.0+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
+[![python](https://img.shields.io/badge/-Python_3.12-blue?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3100/)
+[![pytorch](https://img.shields.io/badge/PyTorch_2.10+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
 [![lightning](https://img.shields.io/badge/-Lightning_2.0+-792ee5?logo=pytorchlightning&logoColor=white)](https://pytorchlightning.ai/)
 [![hydra](https://img.shields.io/badge/Config-Hydra_1.3-89b8cd)](https://hydra.cc/)
 [![black](https://img.shields.io/badge/Code%20Style-Black-black.svg?labelColor=gray)](https://black.readthedocs.io/en/stable/)
@@ -17,7 +17,8 @@
 
 </div>
 
-> This is the official code implementation of 🍵 Matcha-TTS [ICASSP 2024].
+> ⚠️ This repository is a fork of the [official Matcha-TTS](https://github.com/shivammehta25/Matcha-TTS), with CUDA 13 and [NVIDIA PyTorch Docker (25.11-py3)](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch) support added by RunnableApp.
+
 
 We propose 🍵 Matcha-TTS, a new approach to non-autoregressive neural TTS, that uses [conditional flow matching](https://arxiv.org/abs/2210.02747) (similar to [rectified flows](https://arxiv.org/abs/2209.03003)) to speed up ODE-based speech synthesis. Our method:
 
@@ -38,23 +39,18 @@ You can also [try 🍵 Matcha-TTS in your browser on HuggingFace 🤗 spaces](ht
 
 ## Installation
 
-1. Create an environment (suggested but optional)
-
-```
-conda create -n matcha-tts python=3.10 -y
-conda activate matcha-tts
-```
-
-2. Install Matcha TTS using pip or from source
+1. This repo assumes you're using Nvidia NGC Pytorch container.  Matcha-TTS requires `espeak-ng`:
 
 ```bash
-pip install matcha-tts
+apt update
+apt-get install -y espeak-ng
 ```
 
-from source
+2. Install from source
 
 ```bash
-pip install git+https://github.com/shivammehta25/Matcha-TTS.git
+pip install peft
+pip install git+https://github.com/runableapp/Matcha-TTS.git
 cd Matcha-TTS
 pip install -e .
 ```
