@@ -1,11 +1,14 @@
 import argparse
+import collections
 import datetime as dt
 import os
+import typing
 import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import omegaconf
 import soundfile as sf
 import torch
 
@@ -16,6 +19,21 @@ from matcha.hifigan.models import Generator as HiFiGAN
 from matcha.models.matcha_tts import MatchaTTS
 from matcha.text import sequence_to_text, text_to_sequence
 from matcha.utils.utils import assert_model_downloaded, get_user_data_dir, intersperse
+
+# Add safe globals for PyTorch 2.6+ checkpoint loading
+# This allows OmegaConf and other necessary classes to be unpickled
+torch.serialization.add_safe_globals([
+    omegaconf.dictconfig.DictConfig,
+    omegaconf.base.ContainerMetadata,
+    omegaconf.base.Metadata,
+    omegaconf.nodes.AnyNode,
+    typing.Any,
+    dict,
+    list,
+    tuple,
+    set,
+    collections.defaultdict,
+])
 
 MATCHA_URLS = {
     "matcha_ljspeech": "https://github.com/shivammehta25/Matcha-TTS-checkpoints/releases/download/v1.0/matcha_ljspeech.ckpt",
@@ -80,15 +98,15 @@ def assert_required_models_available(args):
     assert_model_downloaded(vocoder_path, VOCODER_URLS[args.vocoder])
     return {"matcha": model_path, "vocoder": vocoder_path}
 
-
 def load_hifigan(checkpoint_path, device):
     h = AttrDict(v1)
     hifigan = HiFiGAN(h).to(device)
-    hifigan.load_state_dict(torch.load(checkpoint_path, map_location=device)["generator"])
+    # Allow AttrDict in safe globals if it's in the checkpoint
+    with torch.serialization.safe_globals([AttrDict]):
+        hifigan.load_state_dict(torch.load(checkpoint_path, map_location=device)["generator"])
     _ = hifigan.eval()
     hifigan.remove_weight_norm()
     return hifigan
-
 
 def load_vocoder(vocoder_name, checkpoint_path, device):
     print(f"[!] Loading {vocoder_name}!")
@@ -104,10 +122,10 @@ def load_vocoder(vocoder_name, checkpoint_path, device):
     print(f"[+] {vocoder_name} loaded!")
     return vocoder, denoiser
 
-
 def load_matcha(model_name, checkpoint_path, device):
     print(f"[!] Loading {model_name}!")
-    model = MatchaTTS.load_from_checkpoint(checkpoint_path, map_location=device)
+    # Use weights_only=False for PyTorch 2.6+ compatibility with OmegaConf checkpoints
+    model = MatchaTTS.load_from_checkpoint(checkpoint_path, map_location=device, weights_only=False)
     _ = model.eval()
 
     print(f"[+] {model_name} loaded!")
